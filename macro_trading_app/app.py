@@ -35,27 +35,22 @@ def safe_check(val, condition):
     return condition
 
 def check_stock(ticker):
-    stock = yf.Ticker(ticker)
-    try:
-        info = stock.info
-        hist = stock.history(period="6mo")
-        dividend_yield = info.get('dividendYield', None)
-        payout_ratio = info.get('payoutRatio', None)
-        revenue_growth = info.get('revenueGrowth', None)
-        pe_ratio = info.get('trailingPE', None)
-        debt_to_equity = info.get('debtToEquity', None)
-        roe = info.get('returnOnEquity', None)
-        gross_margin = info.get('grossMargins', None)
-        operating_margin = info.get('operatingMargins', None)
-        current_ratio = info.get('currentRatio', None)
-        free_cash_flow = info.get('freeCashflow', None)
-        sector = info.get('sector', 'Unknown')
-        summary = info.get('longBusinessSummary', '')[:500]
-        logo = info.get('logo_url', '')
-    except:
+    data = fetch_stock_data(ticker)
+    if not data:
         return None
 
-        checks = [
+    dividend_yield = data.get("dividend_yield")
+    payout_ratio = data.get("payout_ratio")
+    revenue_growth = data.get("revenue_growth")
+    pe_ratio = data.get("pe_ratio")
+    debt_to_equity = data.get("debt_to_equity")
+    roe = data.get("roe")
+    gross_margin = data.get("gross_margin")
+    operating_margin = data.get("operating_margin")
+    current_ratio = data.get("current_ratio")
+    free_cash_flow = data.get("free_cash_flow")
+
+    checks = [
         safe_check(dividend_yield, dividend_yield >= 0.004),
         safe_check(payout_ratio, payout_ratio <= 0.80),
         safe_check(revenue_growth, revenue_growth >= 0),
@@ -73,35 +68,14 @@ def check_stock(ticker):
     total_effective_checks = len(checks) - missing_checks
     fits_strategy = total_effective_checks == 0 or checks_passed >= 7
 
-    checks_passed = sum(1 for c in checks if c is True)
-    missing_checks = sum(1 for c in checks if c is None)
-    total_effective_checks = len(checks) - missing_checks
-    fits_strategy = total_effective_checks == 0 or checks_passed >= 7
-
-        checks_passed = sum(1 for c in checks if c is True)
-    missing_checks = sum(1 for c in checks if c is None)
-    total_effective_checks = len(checks) - missing_checks
-    fits_strategy = total_effective_checks == 0 or checks_passed >= 7
-
     return {
-        'Ticker': ticker,
-        'Dividend Yield': dividend_yield,
-        'Payout Ratio': payout_ratio,
-        'Revenue Growth': revenue_growth,
-        'P/E Ratio': pe_ratio,
-        'Debt to Equity': debt_to_equity,
-        'ROE': roe,
-        'Gross Margin': gross_margin,
-        'Operating Margin': operating_margin,
-        'Current Ratio': current_ratio,
-        'Free Cash Flow': free_cash_flow,
-        'Sector': sector,
-        'Summary': summary,
-        'Logo': logo,
-        'Fits Strategy': fits_strategy,
-        'Checks Passed': checks_passed,
-        'Total Criteria': total_effective_checks,
-        'Price History': hist['Close'] if not hist.empty else None
+        "Ticker": ticker,
+        "Fits Strategy": fits_strategy,
+        "Checks Passed": checks_passed,
+        "Total Criteria": total_effective_checks,
+        "Sector": data.get("sector", "Unknown"),
+        "Summary": data.get("summary", "No summary available."),
+        "Logo": data.get("logo")
     }
 
 st.header("📈 Evaluate Up to 10 Stocks")
