@@ -112,6 +112,8 @@ st.header("📈 Evaluate Up to 10 Stocks")
 user_input = st.text_area("Enter tickers (comma separated, max 10):")
 show_only_pass = st.checkbox("Only show stocks that pass the strategy")
 
+triggered_balloons = False
+
 if user_input:
     tickers = [x.strip().upper() for x in user_input.split(",") if x.strip()][:10]
     results = []
@@ -120,8 +122,13 @@ if user_input:
         result = check_stock(tkr)
         if result:
             results.append(result)
+            if result['Fits Strategy']:
+                triggered_balloons = True
         else:
             st.warning(f"⚠️ Could not fetch data for {tkr}")
+
+    if triggered_balloons:
+        st.balloons()
 
     filtered_results = [r for r in results if r['Fits Strategy']] if show_only_pass else results
 
