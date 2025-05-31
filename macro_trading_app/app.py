@@ -119,6 +119,17 @@ if tickers:
             st.markdown(f"**Sector:** {sector_icons.get(res['Sector'], '')} {res['Sector']}")
             st.markdown(f"**Summary:** {res['Summary']}")
             st.markdown(f"**Checks Passed:** {res['Checks Passed']} / 10")
+        st.markdown("**Criteria Evaluated:**")
+        st.markdown("- Dividend Yield ≥ 1.9%  
+- Payout Ratio ≤ 82%  
+- Revenue Growth ≥ 0.9%  
+- P/E Ratio between 9.5 and 26  
+- Debt to Equity ≤ 0.72  
+- ROE ≥ 9.5%  
+- Gross Margin ≥ 29.5%  
+- Operating Margin ≥ 11.5%  
+- Current Ratio ≥ 1.35  
+- Free Cash Flow > 0")
             st.markdown("---")
     else:
         st.info("🔍 Please select or enter stock tickers to begin screening.")
