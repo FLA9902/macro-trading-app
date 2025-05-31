@@ -56,17 +56,22 @@ def check_stock(ticker):
         return None
 
     checks = [
-        safe_check(dividend_yield, dividend_yield >= 0.019),
-        safe_check(payout_ratio, payout_ratio <= 0.82),
-        safe_check(revenue_growth, revenue_growth >= 0.009),
-        safe_check(pe_ratio, 9.5 <= pe_ratio <= 26),
-        safe_check(debt_to_equity, debt_to_equity <= 0.72),
-        safe_check(roe, roe >= 0.095),
-        safe_check(gross_margin, gross_margin >= 0.295),
-        safe_check(operating_margin, operating_margin >= 0.115),
-        safe_check(current_ratio, current_ratio >= 1.35),
+        safe_check(dividend_yield, dividend_yield >= 0.004),
+        safe_check(payout_ratio, payout_ratio <= 0.80),
+        safe_check(revenue_growth, revenue_growth >= 0),
+        safe_check(pe_ratio, 9.5 <= pe_ratio <= 35),
+        safe_check(debt_to_equity, debt_to_equity <= 2),
+        safe_check(roe, roe >= 0.08),
+        safe_check(gross_margin, gross_margin >= 0.30),
+        safe_check(operating_margin, operating_margin >= 0.10),
+        safe_check(current_ratio, current_ratio >= 1),
         safe_check(free_cash_flow, free_cash_flow > 0)
     ]
+
+    checks_passed = sum(1 for c in checks if c is True)
+    missing_checks = sum(1 for c in checks if c is None)
+    total_effective_checks = len(checks) - missing_checks
+    fits_strategy = total_effective_checks == 0 or checks_passed >= 7
 
     checks_passed = sum(1 for c in checks if c is True)
     missing_checks = sum(1 for c in checks if c is None)
@@ -131,15 +136,15 @@ if tickers:
         st.markdown(f"**Checks Passed:** {res['Checks Passed']} / 10")
         st.markdown("**Criteria Evaluated:**")
         st.markdown("""
-- Dividend Yield ≥ 0.5%  
-- Payout Ratio ≤ 82%  
-- Revenue Growth ≥ 0.9%  
-- P/E Ratio between 9.5 and 30  
-- Debt to Equity ≤ 1.5  
-- ROE ≥ 9.5%  
-- Gross Margin ≥ 29.5%  
-- Operating Margin ≥ 11.5%  
-- Current Ratio ≥ 1.35  
+- Dividend Yield ≥ 0.4%  
+- Payout Ratio ≤ 80%  
+- Revenue Growth ≥ 0%  
+- P/E Ratio between 9.5 and 35  
+- Debt to Equity ≤ 2  
+- ROE ≥ 8%  
+- Gross Margin ≥ 30%  
+- Operating Margin ≥ 10%  
+- Current Ratio ≥ 1  
 - Free Cash Flow > 0
 """)
         st.markdown("---")
