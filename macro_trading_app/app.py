@@ -1,6 +1,7 @@
 import streamlit as st
 import yfinance as yf
 import pandas as pd
+import matplotlib.pyplot as plt
 
 st.set_page_config(page_title="Conservative Dividend Screener", layout="wide")
 
@@ -10,6 +11,7 @@ if "results" not in st.session_state:
 def check_stock(ticker):
     stock = yf.Ticker(ticker)
     info = stock.info
+    hist = stock.history(period="6mo")
     try:
         dividend_yield = info.get('dividendYield', None)
         payout_ratio = info.get('payoutRatio', None)
@@ -67,7 +69,8 @@ def check_stock(ticker):
         'Sector': sector,
         'Summary': summary,
         'Fits Strategy': fits_strategy,
-        'Checks Passed': checks_passed
+        'Checks Passed': checks_passed,
+        'Price History': hist['Close'] if not hist.empty else None
     }
 
 def pass_fail(val, condition):
@@ -83,10 +86,9 @@ st.markdown("""
         padding: 1.5rem;
         border-radius: 1.25rem;
         box-shadow: 0 3px 8px rgba(0,0,0,0.12);
-        background: linear-gradient(145deg, #f9f9f9, #ffffff);
-        margin-bottom: 1.75rem;
+        background: linear-gradient(145deg, #f4f4f4, #ffffff);
+        margin-bottom: 2rem;
         font-size: 1rem;
-        max-width: 100%;
         color: #222;
         transition: 0.3s ease;
     }
@@ -96,7 +98,10 @@ st.markdown("""
     .status-green { color: #148a00; font-weight: bold; }
     .status-yellow { color: #c78400; font-weight: bold; }
     .status-red { color: #b00020; font-weight: bold; }
-    .metrics-table { line-height: 1.6; margin-top: 1rem; }
+    .metrics-table { line-height: 1.6; margin-top: 1rem; font-size: 0.95rem; }
+    @media screen and (max-width: 768px) {
+        .metric-card { font-size: 0.9rem; padding: 1rem; }
+    }
     </style>
 """, unsafe_allow_html=True)
 
@@ -119,8 +124,7 @@ if user_input:
 
     if filtered_results:
         for res in filtered_results:
-            percent = int((res['Checks Passed'] / 10) * 100)
-            color_class = "status-green" if percent >= 80 else "status-yellow" if percent == 70 else "status-red"
+            color_class = "status-green" if res['Checks Passed'] >= 8 else "status-yellow" if res['Checks Passed'] == 7 else "status-red"
             st.markdown(f"""
             <div class='metric-card'>
                 <h4>{res['Ticker']} ({res['Sector']})</h4>
@@ -140,6 +144,15 @@ if user_input:
                 <p class='{color_class}'><strong>{'✅ Fits strategy!' if res['Fits Strategy'] else '❌ Does not fit strategy'} — {res['Checks Passed']} / 10 checks passed</strong></p>
             </div>
             """, unsafe_allow_html=True)
+
+            if res['Price History'] is not None:
+                fig, ax = plt.subplots(figsize=(6, 2))
+                res['Price History'].plot(ax=ax, color='gray')
+                ax.set_title(f"6-Month Price Chart for {res['Ticker']}", fontsize=10)
+                ax.set_ylabel('Price')
+                ax.set_xlabel('Date')
+                ax.grid(True, linestyle='--', linewidth=0.5)
+                st.pyplot(fig)
 
         df_results = pd.DataFrame(filtered_results)
         st.session_state["results"] = filtered_results
