@@ -80,33 +80,23 @@ st.title("🛡️ Conservative Dividend Stock Screener")
 st.markdown("""
     <style>
     .metric-card {
-        padding: 1rem;
-        border-radius: 1rem;
-        box-shadow: 0 2px 6px rgba(0,0,0,0.15);
-        background-color: #ffffff;
-        margin-bottom: 1.5rem;
+        padding: 1.5rem;
+        border-radius: 1.25rem;
+        box-shadow: 0 3px 8px rgba(0,0,0,0.12);
+        background: linear-gradient(145deg, #f9f9f9, #ffffff);
+        margin-bottom: 1.75rem;
         font-size: 1rem;
         max-width: 100%;
         color: #222;
+        transition: 0.3s ease;
+    }
+    .metric-card:hover {
+        box-shadow: 0 6px 16px rgba(0,0,0,0.18);
     }
     .status-green { color: #148a00; font-weight: bold; }
     .status-yellow { color: #c78400; font-weight: bold; }
     .status-red { color: #b00020; font-weight: bold; }
-    .progress-bar {
-        height: 16px;
-        width: 100%;
-        background-color: #eee;
-        border-radius: 10px;
-        overflow: hidden;
-        margin: 0.5rem 0;
-    }
-    .progress-fill {
-        height: 100%;
-        text-align: center;
-        color: white;
-        font-size: 12px;
-        line-height: 16px;
-    }
+    .metrics-table { line-height: 1.6; margin-top: 1rem; }
     </style>
 """, unsafe_allow_html=True)
 
@@ -130,12 +120,12 @@ if user_input:
     if filtered_results:
         for res in filtered_results:
             percent = int((res['Checks Passed'] / 10) * 100)
-            color = "#148a00" if percent >= 80 else "#c78400" if percent == 70 else "#b00020"
+            color_class = "status-green" if percent >= 80 else "status-yellow" if percent == 70 else "status-red"
             st.markdown(f"""
             <div class='metric-card'>
                 <h4>{res['Ticker']} ({res['Sector']})</h4>
                 <p>{res['Summary']}</p>
-                <div>
+                <div class="metrics-table">
                     {pass_fail(res['Dividend Yield'], res['Dividend Yield'] is not None and res['Dividend Yield'] >= 0.019)} — Dividend Yield ≥ 1.9%<br>
                     {pass_fail(res['Payout Ratio'], res['Payout Ratio'] is not None and res['Payout Ratio'] <= 0.82)} — Payout Ratio ≤ 82%<br>
                     {pass_fail(res['Revenue Growth'], res['Revenue Growth'] is not None and res['Revenue Growth'] >= 0.009)} — Revenue Growth ≥ 0.9%<br>
@@ -147,10 +137,7 @@ if user_input:
                     {pass_fail(res['Current Ratio'], res['Current Ratio'] is not None and res['Current Ratio'] >= 1.35)} — Current Ratio ≥ 1.35<br>
                     {pass_fail(res['Free Cash Flow'], res['Free Cash Flow'] is None or res['Free Cash Flow'] > 0)} — FCF > 0 (if known)
                 </div>
-                <div class="progress-bar">
-                    <div class="progress-fill" style="width:{percent}%; background-color:{color};">{percent}%</div>
-                </div>
-                <p class='{"status-green" if percent >= 80 else "status-yellow" if percent == 70 else "status-red"}'><strong>{'✅ Fits strategy!' if res['Fits Strategy'] else '❌ Does not fit strategy'} — {res['Checks Passed']} / 10 checks passed</strong></p>
+                <p class='{color_class}'><strong>{'✅ Fits strategy!' if res['Fits Strategy'] else '❌ Does not fit strategy'} — {res['Checks Passed']} / 10 checks passed</strong></p>
             </div>
             """, unsafe_allow_html=True)
 
