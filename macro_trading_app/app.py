@@ -68,6 +68,11 @@ def check_stock(ticker):
         safe_check(free_cash_flow, free_cash_flow > 0)
     ]
 
+    checks_passed = sum(1 for c in checks if c is True)
+    missing_checks = sum(1 for c in checks if c is None)
+    total_effective_checks = len(checks) - missing_checks
+    fits_strategy = total_effective_checks == 0 or checks_passed >= 7
+
         checks_passed = sum(1 for c in checks if c is True)
     missing_checks = sum(1 for c in checks if c is None)
     total_effective_checks = len(checks) - missing_checks
