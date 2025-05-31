@@ -11,7 +11,10 @@ if "results" not in st.session_state:
 def check_stock(ticker):
     stock = yf.Ticker(ticker)
     info = stock.info
-    hist = stock.history(period="6mo")
+    try:
+        hist = stock.history(period="6mo")
+    except:
+        hist = pd.DataFrame()
     try:
         dividend_yield = info.get('dividendYield', None)
         payout_ratio = info.get('payoutRatio', None)
@@ -152,7 +155,11 @@ if user_input:
                 ax.set_ylabel('Price')
                 ax.set_xlabel('Date')
                 ax.grid(True, linestyle='--', linewidth=0.5)
+                plt.tight_layout()
                 st.pyplot(fig)
+                plt.close(fig)
+            else:
+                st.info(f"📉 No 6-month price data available for {res['Ticker']}")
 
         df_results = pd.DataFrame(filtered_results)
         st.session_state["results"] = filtered_results
