@@ -120,15 +120,5 @@ if tickers:
         st.markdown(f"**Summary:** {res['Summary']}")
         st.markdown(f"**Checks Passed:** {res['Checks Passed']} / 10")
         st.markdown("---")
-
-    if results:
-    for res in results:
-        st.markdown(f"### {res['Ticker']} {'✅' if res['Fits Strategy'] else '❌'}")
-        if res['Logo']:
-            st.image(res['Logo'], width=60)
-        st.markdown(f"**Sector:** {sector_icons.get(res['Sector'], '')} {res['Sector']}")
-        st.markdown(f"**Summary:** {res['Summary']}")
-        st.markdown(f"**Checks Passed:** {res['Checks Passed']} / 10")
-        st.markdown("---")
 else:
     st.info("🔍 Please select or enter stock tickers to begin screening.")
