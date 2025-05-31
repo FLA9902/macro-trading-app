@@ -131,11 +131,11 @@ if tickers:
         st.markdown(f"**Checks Passed:** {res['Checks Passed']} / 10")
         st.markdown("**Criteria Evaluated:**")
         st.markdown("""
-- Dividend Yield ≥ 1.9%  
+- Dividend Yield ≥ 0.5%  
 - Payout Ratio ≤ 82%  
 - Revenue Growth ≥ 0.9%  
-- P/E Ratio between 9.5 and 26  
-- Debt to Equity ≤ 0.72  
+- P/E Ratio between 9.5 and 30  
+- Debt to Equity ≤ 1.5  
 - ROE ≥ 9.5%  
 - Gross Margin ≥ 29.5%  
 - Operating Margin ≥ 11.5%  
