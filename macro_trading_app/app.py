@@ -1,38 +1,35 @@
 import streamlit as st
 import yfinance as yf
-import pandas as pd
-import matplotlib.pyplot as plt
 
-st.set_page_config(page_title="Conservative Dividend Screener", layout="wide")
+def safe_check(value, condition):
+    if value is None:
+        return None
+    try:
+        return condition
+    except:
+        return None
 
-if "results" not in st.session_state:
-    st.session_state["results"] = []
-if "history" not in st.session_state:
-    st.session_state["history"] = []
-
-SUGGESTED_TICKERS = [
-    "JNJ", "PG", "KO", "PEP", "XOM", "CVX", "MRK", "PFE", "T", "VZ",
-    "MO", "MCD", "WMT", "CL", "MMM", "ABT", "MDT", "ADP", "TROW", "SYY"
-]
-
-sector_icons = {
-    "Technology": "💻",
-    "Financial Services": "🏦",
-    "Healthcare": "🧬",
-    "Consumer Defensive": "🛒",
-    "Industrials": "🏗️",
-    "Energy": "⚡",
-    "Utilities": "💡",
-    "Communication Services": "📡",
-    "Consumer Cyclical": "🎯",
-    "Real Estate": "🏠",
-    "Basic Materials": "🧱"
-}
-
-def safe_check(val, condition):
-    if val is None:
-        return None  # Neutral if missing
-    return condition
+def fetch_stock_data(ticker):
+    try:
+        stock = yf.Ticker(ticker)
+        info = stock.info
+        return {
+            "dividend_yield": info.get("dividendYield"),
+            "payout_ratio": info.get("payoutRatio"),
+            "revenue_growth": info.get("revenueGrowth"),
+            "pe_ratio": info.get("trailingPE"),
+            "debt_to_equity": info.get("debtToEquity"),
+            "roe": info.get("returnOnEquity"),
+            "gross_margin": info.get("grossMargins"),
+            "operating_margin": info.get("operatingMargins"),
+            "current_ratio": info.get("currentRatio"),
+            "free_cash_flow": info.get("freeCashflow"),
+            "sector": info.get("sector", "Unknown"),
+            "summary": info.get("longBusinessSummary", ""),
+            "logo": info.get("logo_url")
+        }
+    except Exception as e:
+        return None
 
 def check_stock(ticker):
     data = fetch_stock_data(ticker)
@@ -78,38 +75,36 @@ def check_stock(ticker):
         "Logo": data.get("logo")
     }
 
-st.header("📈 Evaluate Up to 10 Stocks")
-st.markdown("Enter up to 10 tickers using the dropdown or input field below. Conservative dividend stocks like JNJ, KO, PG are good starting points.")
-selected = st.multiselect("Choose from suggested tickers:", options=SUGGESTED_TICKERS)
-custom_input = st.text_input("Or enter custom tickers (comma separated):")
-show_only_pass = st.checkbox("Only show stocks that pass the strategy")
+sector_icons = {
+    "Technology": "💻", "Healthcare": "🧬", "Consumer Defensive": "🛒", "Financial Services": "💰",
+    "Industrials": "🏗️", "Energy": "⛽", "Utilities": "🔌", "Communication Services": "📡",
+    "Real Estate": "🏠", "Basic Materials": "⚙️", "Consumer Cyclical": "🛍️"
+}
 
-custom_tickers = [x.strip().upper() for x in custom_input.split(",") if x.strip()] if custom_input else []
-tickers = (selected + custom_tickers)[:10]
+st.set_page_config(page_title="Conservative Stock Screener", layout="centered")
+st.title("🧠 Conservative Stock Screener")
 
-if tickers:
-    st.session_state["history"].append(", ".join(tickers))
+tickers = st.text_input("Enter up to 10 stock tickers separated by commas (e.g., KO,PG,PEP)").upper()
+submit = st.button("Check Stocks")
+
+if submit and tickers:
     results = []
-    for tkr in tickers:
-        try:
-            result = check_stock(tkr)
-            if result:
-                results.append(result)
-            else:
-                st.warning(f"⚠️ Could not fetch data for {tkr}")
-        except Exception as e:
-            st.error(f"❌ Error checking {tkr}: {e}")
+    for tkr in tickers.split(",")[:10]:
+        tkr = tkr.strip()
+        result = check_stock(tkr)
+        if result:
+            results.append(result)
 
     if results:
-    for res in results:
-        st.markdown(f"### {res['Ticker']} {'✅' if res['Fits Strategy'] else '❌'}")
-        if res['Logo']:
-            st.image(res['Logo'], width=60)
-        st.markdown(f"**Sector:** {sector_icons.get(res['Sector'], '')} {res['Sector']}")
-        st.markdown(f"**Summary:** {res['Summary']}")
-        st.markdown(f"**Checks Passed:** {res['Checks Passed']} / 10")
-        st.markdown("**Criteria Evaluated:**")
-        st.markdown("""
+        for res in results:
+            st.markdown(f"### {res['Ticker']} {'✅' if res['Fits Strategy'] else '❌'}")
+            if res['Logo']:
+                st.image(res['Logo'], width=60)
+            st.markdown(f"**Sector:** {sector_icons.get(res['Sector'], '')} {res['Sector']}")
+            st.markdown(f"**Summary:** {res['Summary']}")
+            st.markdown(f"**Checks Passed:** {res['Checks Passed']} / 10")
+            st.markdown("**Criteria Evaluated:**")
+            st.markdown("""
 - Dividend Yield ≥ 0.4%  
 - Payout Ratio ≤ 80%  
 - Revenue Growth ≥ 0%  
@@ -121,8 +116,6 @@ if tickers:
 - Current Ratio ≥ 1  
 - Free Cash Flow > 0
 """)
-        st.markdown("---")
-else:
-        st.info("🔍 Please select or enter stock tickers to begin screening.")
-else:
-    st.info("🔍 Please select or enter stock tickers to begin screening.")
+            st.markdown("---")
+    else:
+        st.warning("No valid results to display.")
