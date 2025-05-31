@@ -8,6 +8,20 @@ st.set_page_config(page_title="Conservative Dividend Screener", layout="wide")
 if "results" not in st.session_state:
     st.session_state["results"] = []
 
+sector_icons = {
+    "Technology": "💻",
+    "Financial Services": "🏦",
+    "Healthcare": "🧬",
+    "Consumer Defensive": "🛒",
+    "Industrials": "🏗️",
+    "Energy": "⚡",
+    "Utilities": "💡",
+    "Communication Services": "📡",
+    "Consumer Cyclical": "🎯",
+    "Real Estate": "🏠",
+    "Basic Materials": "🧱"
+}
+
 def check_stock(ticker):
     stock = yf.Ticker(ticker)
     info = stock.info
@@ -28,6 +42,7 @@ def check_stock(ticker):
         free_cash_flow = info.get('freeCashflow', None)
         sector = info.get('sector', 'Unknown')
         summary = info.get('longBusinessSummary', '')[:500]
+        logo = info.get('logo_url', '')
     except:
         return None
 
@@ -71,6 +86,7 @@ def check_stock(ticker):
         'Free Cash Flow': free_cash_flow,
         'Sector': sector,
         'Summary': summary,
+        'Logo': logo,
         'Fits Strategy': fits_strategy,
         'Checks Passed': checks_passed,
         'Price History': hist['Close'] if not hist.empty else None
@@ -81,31 +97,13 @@ def pass_fail(val, condition):
         return "❓ N/A"
     return f"✅ {val}" if condition else f"❌ {val}"
 
-st.title("🛡️ Conservative Dividend Stock Screener")
-
 st.markdown("""
-    <style>
-    .metric-card {
-        padding: 1.5rem;
-        border-radius: 1.25rem;
-        box-shadow: 0 3px 8px rgba(0,0,0,0.12);
-        background: linear-gradient(145deg, #f4f4f4, #ffffff);
-        margin-bottom: 2rem;
-        font-size: 1rem;
-        color: #222;
-        transition: 0.3s ease;
-    }
-    .metric-card:hover {
-        box-shadow: 0 6px 16px rgba(0,0,0,0.18);
-    }
-    .status-green { color: #148a00; font-weight: bold; }
-    .status-yellow { color: #c78400; font-weight: bold; }
-    .status-red { color: #b00020; font-weight: bold; }
-    .metrics-table { line-height: 1.6; margin-top: 1rem; font-size: 0.95rem; }
-    @media screen and (max-width: 768px) {
-        .metric-card { font-size: 0.9rem; padding: 1rem; }
-    }
-    </style>
+<div style="position: relative; height: 200px; background-image: url('https://images.unsplash.com/photo-1520974722079-52ad2f48a5c2'); background-size: cover; border-radius: 12px; margin-bottom: 20px;">
+    <div style="position: absolute; bottom: 0; background: rgba(0,0,0,0.6); width: 100%; padding: 1rem; color: white; border-radius: 0 0 12px 12px;">
+        <h2>🛡️ Conservative Dividend Screener</h2>
+        <p>Screen for long-term, stable, dividend-paying stocks</p>
+    </div>
+</div>
 """, unsafe_allow_html=True)
 
 st.header("📈 Evaluate Up to 10 Stocks")
@@ -128,9 +126,15 @@ if user_input:
     if filtered_results:
         for res in filtered_results:
             color_class = "status-green" if res['Checks Passed'] >= 8 else "status-yellow" if res['Checks Passed'] == 7 else "status-red"
+            icon = sector_icons.get(res['Sector'], "📦")
+            logo_html = f"<img src='{res['Logo']}' width='50' style='margin-right:10px;'>" if res['Logo'] else ""
+
             st.markdown(f"""
             <div class='metric-card'>
-                <h4>{res['Ticker']} ({res['Sector']})</h4>
+                <div style='display:flex; align-items:center;'>
+                    {logo_html}
+                    <h4 style='margin-bottom:0;'>{res['Ticker']} — {icon} {res['Sector']}</h4>
+                </div>
                 <p>{res['Summary']}</p>
                 <div class="metrics-table">
                     {pass_fail(res['Dividend Yield'], res['Dividend Yield'] is not None and res['Dividend Yield'] >= 0.019)} — Dividend Yield ≥ 1.9%<br>
