@@ -34,12 +34,9 @@ def safe_check(val, condition):
 
 def check_stock(ticker):
     stock = yf.Ticker(ticker)
-    info = stock.info
     try:
+        info = stock.info
         hist = stock.history(period="6mo")
-    except:
-        hist = pd.DataFrame()
-    try:
         dividend_yield = info.get('dividendYield', None)
         payout_ratio = info.get('payoutRatio', None)
         revenue_growth = info.get('revenueGrowth', None)
@@ -91,3 +88,29 @@ def check_stock(ticker):
         'Checks Passed': checks_passed,
         'Price History': hist['Close'] if not hist.empty else None
     }
+
+st.header("📈 Evaluate Up to 10 Stocks")
+st.markdown("Enter up to 10 tickers using the dropdown or input field below. Conservative dividend stocks like JNJ, KO, PG are good starting points.")
+selected = st.multiselect("Choose from suggested tickers:", options=SUGGESTED_TICKERS)
+custom_input = st.text_input("Or enter custom tickers (comma separated):")
+show_only_pass = st.checkbox("Only show stocks that pass the strategy")
+
+custom_tickers = [x.strip().upper() for x in custom_input.split(",") if x.strip()] if custom_input else []
+tickers = (selected + custom_tickers)[:10]
+
+if tickers:
+    st.session_state["history"].append(", ".join(tickers))
+    results = []
+    for tkr in tickers:
+        try:
+            result = check_stock(tkr)
+            if result:
+                results.append(result)
+            else:
+                st.warning(f"⚠️ Could not fetch data for {tkr}")
+        except Exception as e:
+            st.error(f"❌ Error checking {tkr}: {e}")
+
+    st.write("Results would be displayed here.")
+else:
+    st.info("🔍 Please select or enter stock tickers to begin screening.")
