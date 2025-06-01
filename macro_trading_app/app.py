@@ -81,8 +81,8 @@ sector_icons = {
     "Real Estate": "🏠", "Basic Materials": "⚙️", "Consumer Cyclical": "🛍️"
 }
 
-st.set_page_config(page_title="Conservative Stock Screener", layout="centered")
-st.title("🧠 Conservative Stock Screener")
+st.set_page_config(page_title="Stock Screener", layout="centered")
+st.title("🧠 Stock Screener")
 
 tickers = st.text_input("Enter up to 10 stock tickers separated by commas (e.g., KO,PG,PEP)").upper()
 submit = st.button("Check Stocks")
